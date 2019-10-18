@@ -26,7 +26,7 @@ matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
   return mf;
 }
 
-matrixf* leerPNG(char *nombre, matrixf *mf, int width, int height, png_byte color_type,
+matrixf* readPNG(char *nombre, matrixf *mf, int width, int height, png_byte color_type,
   png_byte bit_depth, png_bytep *row_pointers) {
   FILE *archivo = fopen(nombre, "rb");
   png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -259,12 +259,6 @@ int main(int argc, char *argv[]){
 	int largoBuffer=0;
     int umbralClasificacion=0;
 
-    int pUmbral[2];
-    int pNombre[2];
-    int status;
-    pid_t pid;
-
-    
     int caso, aux=0;
     while((caso=getopt(argc,argv, "c:m:n:h:t:b"))!= -1){
         switch(caso){
@@ -334,6 +328,22 @@ int main(int argc, char *argv[]){
 	pthread_t *hebrasConsumidoras = (pthread_t *)malloc(numeroHebras*sizeof(pthread_t));
   	printf("\n|     Imagen     |     Nearly Black     |\n");
   	for(int image = 1; image <= numeroImagenes; image++){
+		matrixf *photomf;
+		int width, height, fil, col;
+		float date;
+		png_byte color_type;
+		png_byte bit_depth;
+		png_bytep *row_pointers = NULL;
+		char cantidadImg[10];
+	    sprintf(cantidadImg,"%d",image); 
+	    char *nombreFiltroConvolucion= mflag;
+	    char imagenArchivo[] = "imagen_"; 
+	    char extension[] = ".png"; 
+	    strcat(imagenArchivo,cantidadImg); 
+	    strcat(imagenArchivo,extension);
+		photomf = readPNG(imagenArchivo, photomf, width, height, color_type, bit_depth, row_pointers);
+		int rowsXthread = countFil(photomf)/numeroHebras;
+		int aditionalRows = countFil(photomf)%numeroHebras;
 	    /*char cantidadImg[10];
 	    sprintf(cantidadImg,"%d",image); 
 	    char *nombreFiltroConvolucion= mflag;
