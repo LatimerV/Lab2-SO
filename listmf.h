@@ -132,3 +132,25 @@ listmf *copyListMF(listmf *listmatrixf){
 	}
 	return copylistmatrixf;
 }
+
+int emptyListMF(listmf *listmatrixf){
+	int empty = 1;
+	for (int i=0;i<lengthListMF(listmatrixf);i++){
+		if (getListMF(listmatrixf,i)!=NULL){
+			empty = 0;
+			break;
+		}
+	}
+	return empty;
+}
+
+int fullListMF(listmf *listmatrixf){
+	int full = 1;
+	for (int i=0;i<lengthListMF(listmatrixf);i++){
+		if (getListMF(listmatrixf,i)==NULL){
+			full = 0;
+			break;
+		}
+	}
+	return full;
+}
