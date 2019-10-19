@@ -246,7 +246,7 @@ matrixf *convertFilter(char **datefilter, int cont){
 // Entrada: los parametros ingresados por el usuario.
 // Salida: Entero que representa fin de su ejecucion.
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 
     char *cflag = (char*)malloc(100*sizeof(char));
     char *mflag = (char*)malloc(100*sizeof(char));
@@ -323,7 +323,7 @@ int main(int argc, char *argv[]){
 	/*int pDateMatrix[2];
 	int pFilMatrix[2];
 	int pColMatrix[2];*/
-	listmf *buffer = createArrayListMF(largoBuffer);
+	listmf *buffer = createArrayListMF(largoBuffer); /*Lista de matrices*/
 	pthread_t *hebrasConsumidoras = (pthread_t *)malloc(numeroHebras*sizeof(pthread_t));
   	printf("\n|     Imagen     |     Nearly Black     |\n");
   	for(int image = 1; image <= numeroImagenes; image++){
@@ -334,64 +334,42 @@ int main(int argc, char *argv[]){
 		png_byte bit_depth;
 		png_bytep *row_pointers = NULL;
 		char cantidadImg[10];
-	    sprintf(cantidadImg,"%d",image); 
+	    sprintf(cantidadImg,"%d",image); /*Pasar de numero a string, cantidadImagen*/
 	    char *nombreFiltroConvolucion= mflag;
 	    char imagenArchivo[] = "imagen_"; 
 	    char extension[] = ".png"; 
 	    strcat(imagenArchivo,cantidadImg); 
-	    strcat(imagenArchivo,extension);
-		photomf = readPNG(imagenArchivo, photomf, width, height, color_type, bit_depth, row_pointers);
-		int rowsXthread = countFil(photomf)/numeroHebras;
-		int aditionalRows = countFil(photomf)%numeroHebras;
-	    /*char cantidadImg[10];
-	    sprintf(cantidadImg,"%d",image); 
-	    char *nombreFiltroConvolucion= mflag;
-	    char imagenArchivo[] = "imagen_"; 
-	    char extension[] = ".png"; 
-	    strcat(imagenArchivo,cantidadImg); 
-	    strcat(imagenArchivo,extension); 
-	    pipe(pNombre);
-	    pipe(pUmbral);
-	    pipe(pDateMatrix);
-		pipe(pFilMatrix);
-		pipe(pColMatrix);
-	    pid = fork();
-	    if(pid>0){
-	    	close(pNombre[0]);
-	      	write(pNombre[1],imagenArchivo,(strlen(imagenArchivo)+1));
-	      	close(pUmbral[0]);
-	      	write(pUmbral[1],umbralClasificacion,sizeof(umbralClasificacion));
-			close(pDateMatrix[0]);
-			close(pFilMatrix[0]);
-			close(pColMatrix[0]);
-			int filmatrix = countFil(filter);
-			int colmatrix = countColumn(filter);
-			write(pFilMatrix[1], &filmatrix, sizeof(filmatrix));
-			write(pColMatrix[1], &colmatrix, sizeof(colmatrix));
-			for (int y = 0; y < countFil(filter); y++){
-				for (int x = 0; x < countColumn(filter); x++){
-					float datematrix = getDateMF(filter, y, x);
-					write(pDateMatrix[1], &datematrix, sizeof(datematrix));
-				}
-			}
-	      	waitpid(pid,&status,0);
+	    strcat(imagenArchivo,extension); /*imagen_1.png*/
+		photomf = readPNG(imagenArchivo, photomf, width, height, color_type, bit_depth, row_pointers); /*Matriz de la imagen*/
+		int rowsXthread = countFil(photomf)/numeroHebras; /*Numero de filas por hebra*/
+		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
+	    
+	    matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
+	    float dato=0.0;
+	    int lineas=0;
+	    
 
-	    }else{
-	      	close(pNombre[1]);
-	      	dup2(pNombre[0],3);
-	      	close(pUmbral[1]);
-	      	dup2(pUmbral[0],4);
-			
-			close(pDateMatrix[1]);
-	      	dup2(pDateMatrix[0], 7);
-			close(pFilMatrix[1]);
-	      	dup2(pFilMatrix[0], 8);
-			close(pColMatrix[1]);
-	      	dup2(pColMatrix[0], 9);
-	      	
-	      	char *argvHijo[] = {"lectura",NULL};
-	      	execv(argvHijo[0],argvHijo);
-	    }*/
+	    
+	    while(lineas<countColumn(photomf)){
+	    	/*LLENAR AUX CON LOS DATOS D ELA PRIMERA FILA DE LA IMAGENY DESPUES PASAR AL BUFFER*/
+	    	for(int k=0; k<countColumn(photomf);k++){ /*Para llenar la matriz que se guarda en buffer*/
+	    		aux= setDateMF(aux, lineas,k, getDateMF(photomf, lineas,k));
+	    	}
+
+
+		    for(int i=0; i<largoBuffer; i++){/*Para llenar el buffer*/
+		    	buffer = setListMF(buffer, aux, i); /*Se guarda la matriz de una fila en buffer*/
+	    	/*Aca deberia hacer lo de las hebras consumidoras*/
+
+		    }
+
+
+		    lineas++;
+		}
+
+
+
+
   	}
 }
 
