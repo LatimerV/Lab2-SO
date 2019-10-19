@@ -1,4 +1,6 @@
 # pragma once
+
+//Lista de matrices flotantes (listmf de mf).
 struct listmf{
 	matrixf *mf;
 	struct listmf *next;
@@ -6,6 +8,9 @@ struct listmf{
 };
 typedef struct listmf listmf;
 
+//Entradas: mf, dato tipo matrixf inicial.
+//Funcionamiento: crea una listmf inicial con un unico dato matrixf.
+//Salidas: listmatrixf, dato tipo listmf nueva.
 listmf *createListMF(matrixf *mf){
 	listmf *listmatrixf=(listmf *)malloc(sizeof(listmf));
 	listmatrixf->mf=mf;
@@ -14,6 +19,9 @@ listmf *createListMF(matrixf *mf){
 	return listmatrixf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual.
+//Funcionamiento: avanza a la siguiente posicion de la listmf.
+//Salidas: listmatrixf, dato tipo listmf en la siguiente posicion.
 listmf *nextListMF(listmf *listmatrixf){
 	listmf* previous=listmatrixf;
 	listmatrixf=listmatrixf->next;
@@ -22,6 +30,9 @@ listmf *nextListMF(listmf *listmatrixf){
 	return listmatrixf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual.
+//Funcionamiento: vuelve al inicio de la listmf.
+//Salidas: listmatrixf, dato tipo listmf en la posicion inicial.
 listmf *initialListMF(listmf *listmatrixf){
 	while (listmatrixf->previous!=NULL){
 		listmatrixf=listmatrixf->previous;
@@ -29,6 +40,10 @@ listmf *initialListMF(listmf *listmatrixf){
 	return listmatrixf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf.
+//Funcionamiento: obtiene el largo de listmf contando la cantidad de mfs que posee. 
+//                Si tiene solo un elemento y es nulo, entonces el largo es 0.
+//Salidas: length, dato tipo int que representa el largo de la listmf.
 int lengthListMF(listmf *listmatrixf){
 	listmf *list_matrixf=listmatrixf;
 	int length=0,fin=0;
@@ -49,6 +64,13 @@ int lengthListMF(listmf *listmatrixf){
 	return length;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual; mf, dato tipo matrixf a insertar; 
+//          pos, dato tipo int que indica la posicion a insertar.
+//Funcionamiento: inserta el dato mf en la posicion pos de listmf, incrementando su 
+//                largo. Si pos es mayor al largo de listmf, se inserta al final. Si
+//                pos es menor o igual a 0, entonces se inserta al inicio. Si listmf 
+//                tiene un solo elemento y es nulo, entonces reemplaza el elemento por mf.
+//Salidas: listmatrixf, dato tipo listmf con mf insertado.
 listmf *insertListMF(listmf *listmatrixf,matrixf *mf,int pos){
 	if (lengthListMF(listmatrixf)==0){
 		listmatrixf->mf=mf;
@@ -89,6 +111,9 @@ listmf *insertListMF(listmf *listmatrixf,matrixf *mf,int pos){
 	}
 }
 
+//Entradas: length, dato tipo int que indica el largo para la listmf.
+//Funcionamiento: crea una listmf de largo length con todas sus posiciones nulas.
+//Salidas: listmatrixf, dato tipo listmf nueva vacia.
 listmf *createArrayListMF(int length){
 	listmf *newlistmatrixf = createListMF(NULL);
 	while (length>lengthListMF(newlistmatrixf)){
@@ -97,6 +122,10 @@ listmf *createArrayListMF(int length){
 	return newlistmatrixf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual; mf, dato tipo matrixf a insertar; 
+//          pos, dato tipo int que indica la posicion a insertar.
+//Funcionamiento: cambia el dato ubicado en la posicion pos de listmf por el dato mf.
+//Salidas: listmatrixf, dato tipo listmf el dato cambiado.
 listmf *setListMF(listmf *listmatrixf, matrixf *mf,int pos){
 	if (pos<0){
 		pos=0;
@@ -111,6 +140,10 @@ listmf *setListMF(listmf *listmatrixf, matrixf *mf,int pos){
 	return listmatrixf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual; pos, dato tipo int que indica la 
+//          posicion a insertar.
+//Funcionamiento: obtiene el dato matrixf en la posicion pos de listmf.
+//Salidas: resultmf, dato tipo matrixf obtenido de la listmf.
 matrixf *getListMF(listmf *listmatrixf,int pos){
 	if (pos<0){
 		pos=0;
@@ -125,6 +158,9 @@ matrixf *getListMF(listmf *listmatrixf,int pos){
 	return resultmf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual.
+//Funcionamiento: crea una nueva listmf con los mismos datos de la listmf original.
+//Salidas: copylistmatrixf, dato tipo listmf copia del listmf de la original.
 listmf *copyListMF(listmf *listmatrixf){
 	listmf *copylistmatrixf=createListMF(NULL);
 	for(int x=0;x<lengthListMF(listmatrixf);x++){
@@ -133,6 +169,10 @@ listmf *copyListMF(listmf *listmatrixf){
 	return copylistmatrixf;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual.
+//Funcionamiento: verifica si la listmf esta vacia.
+//Salidas: empty, tipo de dato int. Es 1 si todos los datos de listmf son nulos o
+//         es 0 si alguno no es 0.
 int emptyListMF(listmf *listmatrixf){
 	int empty = 1;
 	for (int i=0;i<lengthListMF(listmatrixf);i++){
@@ -144,6 +184,10 @@ int emptyListMF(listmf *listmatrixf){
 	return empty;
 }
 
+//Entradas: listmatrixf, dato tipo listmf actual.
+//Funcionamiento: verifica si la listmf esta llena.
+//Salidas: full, tipo de dato int. Es 1 si ningun dato de listmf es nulo o es 0 si
+//         alguno no es nulo.
 int fullListMF(listmf *listmatrixf){
 	int full = 1;
 	for (int i=0;i<lengthListMF(listmatrixf);i++){

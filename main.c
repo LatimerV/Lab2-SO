@@ -47,7 +47,6 @@ matrixf* readPNG(char *nombre, matrixf *mf, int width, int height, png_byte colo
   png_destroy_read_struct(&png, &info, NULL);
   mf = grayScale(row_pointers, height, width);
   return mf;
-  //return lf;
 }
 
 matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
