@@ -239,17 +239,25 @@ matrixf *convertFilter(char **datefilter, int cont){
 	return filter;
 }
 
-void *hebraConsumidora(listmf *buff, listmf *auxmfs, matrixf *mf, matrixf *filter,
-					   int umbral, int maxthreads, char *filename){
-	if (){
+void *hebraConsumidora(void *buff, void *auxmfs, void *filt, void *limit,
+					   void *filasigns, void *actual, void *maxthreads, void *filen){
+	listmf *buffer = (listmf *) buff;
+	listmf *photothread = (listmf *) auxmfs;
+	matrixf *filter = (matrixf *) filt;
+	int *umbral = (int *) limit;
+	int *rowsXthread = (int *) filasigns;
+	int *threads = (int *) actual;
+	int *numeroHebras = (int *) maxthreads;
+	char *filename = (char *) filen;
+	if (emptyListMF(buffer) == 0){
 		pthread_mutex_lock(&mutex);
 		pthread_mutex_unlock(&mutex);
 	}
 	else{
+		pthread_barrier_wait(&barrier);
 		mf = bidirectionalConvolution(mf,filter);
 		mf = rectification(mf);
 		mf = pooling(mf);
-		pthread_barrier_wait(&barrier);
 	{
 }
 
@@ -267,11 +275,10 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	char *hflag = (char*)malloc(100*sizeof(char));
 	char *tflag = (char*)malloc(100*sizeof(char));
     int numeroImagenes=0;
-	int numeroHebras=0;
+	int *numeroHebras[0]=0;
 	int largoBuffer=0;
-    int umbralClasificacion=0;
-
-    int caso, aux=0;
+	int *umbral[0]=0;
+    int caso;
     while((caso=getopt(argc,argv, "c:m:n:h:t:b"))!= -1){
         switch(caso){
             case 'c':
@@ -296,7 +303,6 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
                 break;
         
             case 'b': /*Se muestra o no por pantalla*/
-                aux=1;
                 break;
              default:
                 abort();          
@@ -330,10 +336,11 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
     numeroImagenes = atoi(cflag);
 	numeroHebras = atoi(hflag);
 	largoBuffer = atoi(tflag);
-  	umbralClasificacion = atoi(nflag);
+  	umbral = atoi(nflag);
 	pthread_mutex_init(&mutex,NULL);
 	pthread_barrier_init(&barrier, NULL, numeroHebras);
 	listmf *buffer = createArrayListMF(largoBuffer); /*Lista de matrices*/
+	listmf *photothread = createArrayListMF(numeroHebras);
 	pthread_t *hebrasConsumidoras = (pthread_t *)malloc(numeroHebras*sizeof(pthread_t));
   	printf("\n|     Imagen     |     Nearly Black     |\n");
   	for(int image = 1; image <= numeroImagenes; image++){
@@ -353,7 +360,6 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		photomf = readPNG(imagenArchivo, photomf, width, height, color_type, bit_depth, row_pointers); /*Matriz de la imagen*/
 		int rowsXthread = countFil(photomf)/numeroHebras; /*Numero de filas por hebra*/
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
-	    listmf
 	    matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
 	    float dato=0.0;
 		for (int row=0;row<countFil(photomf);row++){
@@ -362,7 +368,9 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 			}
 			buffer = setDateMF(buffer,aux,row%largoBuffer);
 			if((fullListMF(buffer)==0)||(row==countColumn(photomf)-1)){
-				
+				for (int thread=0;thread<numeroHebras;thread++){
+					pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora, &arrId[i]);
+				}
 			}
 		}
 	    //int row=0;		
