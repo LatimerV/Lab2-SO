@@ -10,8 +10,8 @@
 #include "matrixf.h"
 #include "listmf.h"
 
-int varGlobal = 0;
-pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t barrier;
 
 matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
   matrixf *mf = createMF(height, width);
@@ -239,6 +239,19 @@ matrixf *convertFilter(char **datefilter, int cont){
 	return filter;
 }
 
+void *hebraConsumidora(listmf *buff, listmf *auxmfs, matrixf *mf, matrixf *filter,
+					   int umbral, int maxthreads, char *filename){
+	if (){
+		pthread_mutex_lock(&mutex);
+		pthread_mutex_unlock(&mutex);
+	}
+	else{
+		mf = bidirectionalConvolution(mf,filter);
+		mf = rectification(mf);
+		mf = pooling(mf);
+		pthread_barrier_wait(&barrier);
+	{
+}
 
 // Funcion main: Funcion que toma por parametros los datos entrantes y pasa a la etapa de lectura,
 //la matriz del filtro para convulocion y el nombre de las imagenes.
@@ -286,9 +299,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
                 aux=1;
                 break;
              default:
-                abort();
-            
-            
+                abort();          
         }   
     }
 	char **datefilter = (char **)malloc(2000*sizeof(char *));
@@ -320,9 +331,8 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	numeroHebras = atoi(hflag);
 	largoBuffer = atoi(tflag);
   	umbralClasificacion = atoi(nflag);
-	/*int pDateMatrix[2];
-	int pFilMatrix[2];
-	int pColMatrix[2];*/
+	pthread_mutex_init(&mutex,NULL);
+	pthread_barrier_init(&barrier, NULL, numeroHebras);
 	listmf *buffer = createArrayListMF(largoBuffer); /*Lista de matrices*/
 	pthread_t *hebrasConsumidoras = (pthread_t *)malloc(numeroHebras*sizeof(pthread_t));
   	printf("\n|     Imagen     |     Nearly Black     |\n");
@@ -343,28 +353,34 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		photomf = readPNG(imagenArchivo, photomf, width, height, color_type, bit_depth, row_pointers); /*Matriz de la imagen*/
 		int rowsXthread = countFil(photomf)/numeroHebras; /*Numero de filas por hebra*/
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
-	    
+	    listmf
 	    matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
 	    float dato=0.0;
-	    int lineas=0;
-	    
-
-	    
-	    while(lineas<countColumn(photomf)){
+		for (int row=0;row<countFil(photomf);row++){
+			for (int x=0;x<countColumn(photomf);x++){
+				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));
+			}
+			buffer = setDateMF(buffer,aux,row%largoBuffer);
+			if((fullListMF(buffer)==0)||(row==countColumn(photomf)-1)){
+				
+			}
+		}
+	    //int row=0;		
+	    //while(row<countFil(photomf)){
 	    	/*LLENAR AUX CON LOS DATOS D ELA PRIMERA FILA DE LA IMAGENY DESPUES PASAR AL BUFFER*/
-	    	for(int k=0; k<countColumn(photomf);k++){ /*Para llenar la matriz que se guarda en buffer*/
-	    		aux= setDateMF(aux, lineas,k, getDateMF(photomf, lineas,k));
-	    	}
-
-
-		    for(int i=0; i<largoBuffer; i++){/*Para llenar el buffer*/
-		    	buffer = setListMF(buffer, aux, i); /*Se guarda la matriz de una fila en buffer*/
+	    //	for(int k=0; k<countColumn(photomf);k++){ /*Para llenar la matriz que se guarda en buffer*/
+	    //		aux= setDateMF(aux,row,k,getDateMF(photomf,row,k));
+	    //	}
+		//    for(int i=0; i<largoBuffer; i++){/*Para llenar el buffer*/
+		//		for (){
+		//		}
+		//   	buffer = setListMF(buffer,aux,i); /*Se guarda la matriz de una fila en buffer*/
 	    	/*Aca deberia hacer lo de las hebras consumidoras*/
 
-		    }
+		//    }
 
 
-		    lineas++;
+		//    row++;
 		}
 
 
