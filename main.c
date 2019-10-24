@@ -11,6 +11,7 @@
 #include "listmf.h"
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_barrier_t barrier;
 
 matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
@@ -246,11 +247,46 @@ void *hebraConsumidora(void *buff, void *auxmfs, void *filt, void *limit,
 	matrixf *filter = (matrixf *) filt;
 	int *umbral = (int *) limit;
 	int *rowsXthread = (int *) filasigns;
-	int *threads = (int *) actual;
+	int *thread = (int *) actual;
 	int *numeroHebras = (int *) maxthreads;
 	char *filename = (char *) filen;
 	if (emptyListMF(buffer) == 0){
 		pthread_mutex_lock(&mutex);
+		matrixf *newmf;
+		int maxrow = 0;
+		for (int x=0;x<lengthListMF(buffer);x++){
+			if (maxrow == rowsXthread){
+				break;
+			}
+			else{
+				if (getListMF(buffer,x)!=NULL){
+					if (getListMF(photothread,thread)==NULL){
+						newmf = getListMF(buffer,x);
+						photothread = setListMF(photothread,newmf,thread);
+						buffer = setListMF(buffer,NULL,x);
+						maxrow = maxrow + 1;
+					}
+					else{
+						newmf = createMF(countFil(getListMF(photothread,thread))+1,countColumn(getListMF(buffer,x)));
+						int fil = 0;
+						for (int y=0;y<countFil(getListMF(photothread,thread));y++){
+							for (int z=0;z<countColumn(getListMF(photothread,thread));z++){
+								newmf = setDateMF(newmf,y,z,getDateMF(getListMF(photothread,thread),y,z));
+							}
+							fil = fil + 1;
+						}
+						for (int y=0;y<countFil(getListMF(buffer,x));y++){
+							for (int z=0;z<countColumn(getListMF(buffer,x));z++){
+								newmf = setDateMF(newmf,y,z,getDateMF(getListMF(buffer,x),y,z));
+							}
+						}
+						photothread = setListMF(photothread,newmf,thread);
+						buffer = setListMF(buffer,NULL,x);
+						maxrow = maxrow + 1;
+					}
+				}
+			}
+		}
 		pthread_mutex_unlock(&mutex);
 	}
 	else{
