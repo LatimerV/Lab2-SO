@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <png.h>
 #include "matrixf.h"
 #include "listmf.h"
 
@@ -302,7 +303,7 @@ void *hebraConsumidora(void *buff, void *auxmfs, void *filt, void *dats, void *f
 		mf = pooling(mf);
 		mf = classification(mf,datos[0],imagenSalida,datos[1],datos[3],datos[4]);
 		photothread = setListMF(photothread,mf,datos[3]);
-	{
+	}
 }
 
 // Funcion main: Funcion que toma por parametros los datos entrantes y pasa a la etapa de lectura,
@@ -420,7 +421,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 			for (int x=0;x<countColumn(photomf);x++){
 				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));
 			}
-			buffer = setDateMF(buffer,aux,row%largoBuffer);
+			buffer = setListMF(buffer,aux,row%largoBuffer);
 			if((fullListMF(buffer)==0)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					datos[3]=thread;
@@ -444,11 +445,6 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 
 
 		//    row++;
-		}
-
-
-
-
   	}
 }
 
