@@ -248,12 +248,12 @@ matrixf *convertFilter(char **datefilter, int cont){
 
 void *hebraConsumidora(void* argumentos/*void *buff, void *auxmfs, void *filt, void *dats, void *filen*/){
 
-	struct funciones *args = argumentos;
-	listmf *buffer=(listmf*)args.buffer;
-	listmf *photothread = (listmf*) args.photothread;
-	matrixf *filter= (matrixf*) args.filter;
-	int *datos = (int*) args.datos;
-	char *imagenSalida =  (char*) args.imagenSalida; 
+	funciones *args = (funciones*) argumentos;
+	listmf *buffer=(listmf*)args->buffer;
+	listmf *photothread = (listmf*) args->photothread;
+	matrixf *filter= (matrixf*) args->filter;
+	int *datos = (int*) args->datos;
+	char *imagenSalida =  (char*) args->imagenSalida; 
 
 	/*
 	listmf *buffer = (listmf *) buff;
@@ -433,11 +433,11 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		datos[4]=numeroHebras;
 
 		/*Se guardan los datos en la estructura*/
-		//args.buffer = buffer;
-		args.photothread = photothread;
-		args.filter = filter;
-		args.datos= datos;
-		args.imagenSalida = imagenSalida;
+		//args->buffer = buffer;
+		args->photothread = photothread;
+		args->filter = filter;
+		args->datos= datos;
+		args->imagenSalida = imagenSalida;
 
 
 
@@ -447,12 +447,16 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));
 			}
 			buffer = setListMF(buffer,aux,row%largoBuffer);
-			args.buffer = buffer;/*Se guarda el buffer aca, porque aqui se crea*/
+			args->buffer = buffer;/*Se guarda el buffer aca, porque aqui se crea*/
 			if((fullListMF(buffer)==0)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					datos[3]=thread;
 					//pthread_create(hebras, NULL, la funcion que opera, estructura)
 					pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora,(void*)&args);
+				}
+				for (int thread=0;thread<numeroHebras;thread++){
+					//pthread_create(hebras, NULL, la funcion que opera, estructura)
+					pthread_join(hebrasConsumidoras[thread],NULL);
 				}
 			}
 		}
