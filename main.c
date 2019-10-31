@@ -450,7 +450,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 					pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora,(void*)&args);
 				}
 				for (int thread=0;thread<numeroHebras;thread++){
-					//pthread_create(hebras, NULL, la funcion que opera, estructura)
+					//pthread_join(hebras, NULL)
 					pthread_join(hebrasConsumidoras[thread],NULL);
 				}
 			}
