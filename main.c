@@ -431,17 +431,12 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		datos[1]=auxumbral;
 		datos[2]=rowsXthread;
 		datos[4]=numeroHebras;
-
 		/*Se guardan los datos en la estructura*/
 		//args->buffer = buffer;
 		args->photothread = photothread;
 		args->filter = filter;
 		args->datos= datos;
 		args->imagenSalida = imagenSalida;
-
-
-
-
 		for (int row=0;row<countFil(photomf);row++){
 			for (int x=0;x<countColumn(photomf);x++){
 				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));

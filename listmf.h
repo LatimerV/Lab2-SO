@@ -115,9 +115,10 @@ listmf *insertListMF(listmf *listmatrixf,matrixf *mf,int pos){
 //Funcionamiento: crea una listmf de largo length con todas sus posiciones nulas.
 //Salidas: listmatrixf, dato tipo listmf nueva vacia.
 listmf *createArrayListMF(int length){
+	matrixf *mf = createMF(1,1);
 	listmf *newlistmatrixf = createListMF(NULL);
 	while (length>lengthListMF(newlistmatrixf)){
-		newlistmatrixf = insertListMF(newlistmatrixf,NULL,0);
+		newlistmatrixf = insertListMF(newlistmatrixf,mf,0);
 	}
 	return newlistmatrixf;
 }
