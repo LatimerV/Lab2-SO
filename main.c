@@ -255,17 +255,6 @@ void *hebraConsumidora(void* argumentos/*void *buff, void *auxmfs, void *filt, v
 	int *datos = (int*) args->datos;
 	char *imagenSalida =  (char*) args->imagenSalida; 
 
-	/*
-	listmf *buffer = (listmf *) buff;
-	listmf *photothread = (listmf *) auxmfs;
-	matrixf *filter = (matrixf *) filt;
-	int *datos = (int *) dats;
-	/*int *umbral = (int *) limit;
-	int *auxumbral = (int *) limitumbral;
-	int *rowsXthread = (int *) filasigns;
-	int *thread = (int *) actual;
-	int *numeroHebras = (int *) maxthreads;*/
-	/*char *imagenSalida = (char *) filen;*/
 	if (emptyListMF(buffer) == 0){
 		pthread_mutex_lock(&mutex);
 		matrixf *newmf;
@@ -367,7 +356,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	char *date = (char *)malloc(2000*sizeof(char));
 	FILE *filefilter = fopen(mflag,"r");
 
-	funciones *args; /*Se crea una structura de funciones, que contendran los datos necesarios para pasar por parametros a la funcion hebra consumidora;*/
+	funciones *args = (funciones *)malloc(sizeof(funciones)); /*Se crea una structura de funciones, que contendran los datos necesarios para pasar por parametros a la funcion hebra consumidora;*/
 
 
 	int error = 0, cont = 0;
@@ -425,17 +414,15 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
 		int auxumbral = 0;
 	    matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
-	    float dato=0.0;
 		int *datos=(int*)malloc(5*sizeof(int));
 		datos[0]=umbral;
 		datos[1]=auxumbral;
 		datos[2]=rowsXthread;
 		datos[4]=numeroHebras;
 		/*Se guardan los datos en la estructura*/
-		//args->buffer = buffer;
+		printf("holi\n");
 		args->photothread = photothread;
 		args->filter = filter;
-		args->datos= datos;
 		args->imagenSalida = imagenSalida;
 		for (int row=0;row<countFil(photomf);row++){
 			for (int x=0;x<countColumn(photomf);x++){
@@ -446,6 +433,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 			if((fullListMF(buffer)==0)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					datos[3]=thread;
+					args->datos = datos;
 					//pthread_create(hebras, NULL, la funcion que opera, estructura)
 					pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora,(void*)&args);
 				}
@@ -455,22 +443,8 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 				}
 			}
 		}
-	    //int row=0;		
-	    //while(row<countFil(photomf)){
-	    	/*LLENAR AUX CON LOS DATOS D ELA PRIMERA FILA DE LA IMAGENY DESPUES PASAR AL BUFFER*/
-	    //	for(int k=0; k<countColumn(photomf);k++){ /*Para llenar la matriz que se guarda en buffer*/
-	    //		aux= setDateMF(aux,row,k,getDateMF(photomf,row,k));
-	    //	}
-		//    for(int i=0; i<largoBuffer; i++){/*Para llenar el buffer*/
-		//		for (){
-		//		}
-		//   	buffer = setListMF(buffer,aux,i); /*Se guarda la matriz de una fila en buffer*/
-	    	/*Aca deberia hacer lo de las hebras consumidoras*/
-
-		//    }
-
-
-		//    row++;
+		printf("holi\n");
+	    
   	}
 }
 
