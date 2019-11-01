@@ -246,7 +246,7 @@ matrixf *convertFilter(char **datefilter, int cont){
 	return filter;
 }
 
-void *hebraConsumidora(void* argumentos/*void *buff, void *auxmfs, void *filt, void *dats, void *filen*/){
+void *hebraConsumidora(void* argumentos){
 
 	funciones *args = (funciones*) argumentos;
 	listmf *buffer=(listmf*)args->buffer;
@@ -254,8 +254,9 @@ void *hebraConsumidora(void* argumentos/*void *buff, void *auxmfs, void *filt, v
 	matrixf *filter= (matrixf*) args->filter;
 	int *datos = (int*) args->datos;
 	char *imagenSalida =  (char*) args->imagenSalida;
+	//printf("%s\n", imagenSalida);
 	if (emptyListMF(buffer) == 0){
-		printf("hola\n");
+		//printf("hola\n");
 		pthread_mutex_lock(&mutex);
 		matrixf *newmf;
 		int maxrow = 0;
@@ -405,6 +406,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	pthread_t *hebrasConsumidoras = (pthread_t *)malloc(numeroHebras*sizeof(pthread_t));
   	printf("\n|     Imagen     |     Nearly Black     |\n");
   	for(int image = 1; image <= numeroImagenes; image++){
+
 		matrixf *photomf;
 		int width, height, fil, col;
 		float date;
@@ -412,15 +414,25 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		png_byte bit_depth;
 		png_bytep *row_pointers = NULL;
 		char cantidadImg[10];
+		char cantidadImgSalida[10];
 	    sprintf(cantidadImg,"%d",image); /*Pasar de numero a string, cantidadImagen*/
+	    sprintf(cantidadImgSalida,"%d",image); /*Pasar de numero a string, cantidadImagen*/
 	    char *nombreFiltroConvolucion= mflag;
 	    char imagenArchivo[] = "imagen_";
 		char imagenSalida[] = "out_";
 	    char extension[] = ".png"; 
+	    char extension2[] = ".png";
+
 	    strcat(imagenArchivo,cantidadImg);
-		strcat(imagenSalida,cantidadImg);
 	    strcat(imagenArchivo,extension); /*imagen_1.png*/
-		strcat(imagenSalida,extension); /*out_1.png*/
+
+		strcat(imagenSalida,cantidadImgSalida);
+		strcat(imagenSalida,extension2); /*out_1.png*/
+	
+
+		//printf("%s\n",imagenSalida);
+		
+
 		photomf = readPNG(imagenArchivo, photomf, width, height, color_type, bit_depth, row_pointers); /*Matriz de la imagen*/
 		int rowsXthread = countFil(photomf)/numeroHebras; /*Numero de filas por hebra*/
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
@@ -432,10 +444,11 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		datos[2]=rowsXthread;
 		datos[4]=numeroHebras;
 		/*Se guardan los datos en la estructura*/
-		printf("holi\n");
+		
 		args->photothread = photothread;
 		args->filter = filter;
 		args->imagenSalida = imagenSalida;
+
 		for (int row=0;row<countFil(photomf);row++){
 			for (int x=0;x<countColumn(photomf);x++){
 				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));
@@ -455,7 +468,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 				}
 			}
 		}
-		printf("holi\n");
+		
 	    
   	}
 }
