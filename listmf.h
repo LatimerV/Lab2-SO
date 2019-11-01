@@ -47,9 +47,9 @@ listmf *initialListMF(listmf *listmatrixf){
 int lengthListMF(listmf *listmatrixf){
 	listmf *list_matrixf=listmatrixf;
 	int length=0,fin=0;
-	if (list_matrixf->mf==NULL){
+	/*if (list_matrixf->mf==NULL){
 		return length;
-	}
+	}*/
 	while(fin==0){
 		if(list_matrixf->next==NULL){
 			length=length+1;
@@ -72,13 +72,13 @@ int lengthListMF(listmf *listmatrixf){
 //                tiene un solo elemento y es nulo, entonces reemplaza el elemento por mf.
 //Salidas: listmatrixf, dato tipo listmf con mf insertado.
 listmf *insertListMF(listmf *listmatrixf,matrixf *mf,int pos){
-	if (lengthListMF(listmatrixf)==0){
+	/*if ((lengthListMF(listmatrixf)==1)&&(listmatrixf->mf==NULL)){
 		listmatrixf->mf=mf;
 		listmatrixf->next=NULL;
 		listmatrixf->previous=NULL;
 		return listmatrixf;
-	}
-	else if (pos==0){
+	}*/
+	/*else */if (pos==0){
 		listmf *newlistmatrixf = createListMF(mf);
 		newlistmatrixf->previous=NULL;
 		newlistmatrixf->next=listmatrixf;
@@ -115,10 +115,9 @@ listmf *insertListMF(listmf *listmatrixf,matrixf *mf,int pos){
 //Funcionamiento: crea una listmf de largo length con todas sus posiciones nulas.
 //Salidas: listmatrixf, dato tipo listmf nueva vacia.
 listmf *createArrayListMF(int length){
-	matrixf *mf = createMF(1,1);
 	listmf *newlistmatrixf = createListMF(NULL);
 	while (length>lengthListMF(newlistmatrixf)){
-		newlistmatrixf = insertListMF(newlistmatrixf,mf,0);
+		newlistmatrixf = insertListMF(newlistmatrixf,NULL,0);
 	}
 	return newlistmatrixf;
 }

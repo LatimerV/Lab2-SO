@@ -253,9 +253,9 @@ void *hebraConsumidora(void* argumentos/*void *buff, void *auxmfs, void *filt, v
 	listmf *photothread = (listmf*) args->photothread;
 	matrixf *filter= (matrixf*) args->filter;
 	int *datos = (int*) args->datos;
-	char *imagenSalida =  (char*) args->imagenSalida; 
-
+	char *imagenSalida =  (char*) args->imagenSalida;
 	if (emptyListMF(buffer) == 0){
+		printf("hola\n");
 		pthread_mutex_lock(&mutex);
 		matrixf *newmf;
 		int maxrow = 0;
@@ -292,15 +292,27 @@ void *hebraConsumidora(void* argumentos/*void *buff, void *auxmfs, void *filt, v
 				}
 			}
 		}
+		args->buffer=buffer;
+		args->photothread=photothread;
+		args->filter=filter;
+		args->datos=datos;
+		args->imagenSalida=imagenSalida;
 		pthread_mutex_unlock(&mutex);
 	}
 	else{
+		printf("hola2\n");
 		pthread_barrier_wait(&barrier);
 		matrixf *mf=getListMF(photothread,datos[3]);
 		mf = bidirectionalConvolution(mf,filter);
 		mf = rectification(mf);
 		mf = pooling(mf);
 		mf = classification(mf,datos[0],imagenSalida,datos[1],datos[3],datos[4]);
+		photothread = setListMF(photothread,mf,datos[3]);
+		args->buffer=buffer;
+		args->photothread=photothread;
+		args->filter=filter;
+		args->datos=datos;
+		args->imagenSalida=imagenSalida;
 		photothread = setListMF(photothread,mf,datos[3]);
 	}
 }
