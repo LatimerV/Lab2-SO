@@ -301,53 +301,10 @@ void *hebraConsumidora(void* argumentos){
 		args->imagenSalida=imagenSalida;
 		pthread_mutex_unlock(&mutex);
 	}
-	/*if (emptyListMF(buffer) == 0){
-		pthread_mutex_lock(&mutex);
-		matrixf *newmf;
-		int maxrow = 0;
-		for (int x=0;x<lengthListMF(buffer);x++){
-			if (maxrow == datos[2]){
-				break;
-			}
-			else{
-				if (getListMF(buffer,x)!=NULL){
-					if (getListMF(photothread,datos[3])==NULL){
-						newmf = getListMF(buffer,x);
-						photothread = setListMF(photothread,newmf,datos[3]);
-						buffer = setListMF(buffer,NULL,x);
-						maxrow = maxrow + 1;
-					}
-					else{
-						newmf = createMF(countFil(getListMF(photothread,datos[3]))+1,countColumn(getListMF(buffer,x)));
-						int fil = 0;
-						for (int y=0;y<countFil(getListMF(photothread,datos[3]));y++){
-							for (int z=0;z<countColumn(getListMF(photothread,datos[3]));z++){
-								newmf = setDateMF(newmf,y,z,getDateMF(getListMF(photothread,datos[3]),y,z));
-							}
-							fil = fil + 1;
-						}
-						for (int y=0;y<countFil(getListMF(buffer,x));y++){
-							for (int z=0;z<countColumn(getListMF(buffer,x));z++){
-								newmf = setDateMF(newmf,y,z,getDateMF(getListMF(buffer,x),y,z));
-							}
-						}
-						photothread = setListMF(photothread,newmf,datos[3]);
-						buffer = setListMF(buffer,NULL,x);
-						maxrow = maxrow + 1;
-					}
-				}
-			}
-		}
-		args.buffer=buffer;
-		args.photothread=photothread;
-		args.filter=filter;
-		args.datos=datos;
-		args.imagenSalida=imagenSalida;
-		pthread_mutex_unlock(&mutex);
-	}*/
 	else{
-		printf("hola2\n");
+		printf("hola2 (hebra %d)\n",datos[3]);
 		pthread_barrier_wait(&barrier);
+		printf("hola3\n");
 		matrixf *mf=getListMF(photothread,datos[3]);
 		mf = bidirectionalConvolution(mf,filter);
 		mf = rectification(mf);
@@ -501,7 +458,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 			}
 			buffer = setListMF(buffer,aux,row%largoBuffer);
 			args.buffer = buffer;/*Se guarda el buffer aca, porque aqui se crea*/
-			if((fullListMF(buffer)==0)||(row==countColumn(photomf)-1)){
+			if((fullListMF(buffer)==1)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					datos[3]=thread;
 					args.datos = datos;
