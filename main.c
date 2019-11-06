@@ -255,15 +255,16 @@ matrixf *convertFilter(char **datefilter, int cont){
 void *hebraConsumidora(void* hebras){
 
 	int *hebra = (int *) hebras;
-	/*buffer = args->buffer;
-	photothread = args->photothread;
-	filter = args->filter;
-	datos = args->datos;
-	imagenSalida=args->imagenSalida;*/
+	buffer = args.buffer;
+	photothread = args.photothread;
+	filter = args.filter;
+	datos = args.datos;
+	imagenSalida=args.imagenSalida;
 	printf("nombre %s\n",imagenSalida);
 	printf("thread %d\n",*hebra);
-	if ((getListMF(photothread,datos[3])==NULL)||
-	((getListMF(photothread,datos[3])!=NULL)&&(countFil(getListMF(photothread,datos[3]))<datos[2]))){
+	if ((getListMF(photothread,*hebra)==NULL)||
+	((getListMF(photothread,*hebra)!=NULL)&&(countFil(getListMF(photothread,*hebra))<datos[2]))){
+		printf("que pasa\n");
 		pthread_mutex_lock(&mutex);
 		matrixf *newmf;
 		int maxrow = 0;
@@ -300,6 +301,7 @@ void *hebraConsumidora(void* hebras){
 				}
 			}
 		}
+		printf("que pasa2\n");
 		args.buffer=buffer;
 		args.photothread=photothread;
 		args.filter=filter;
@@ -310,7 +312,6 @@ void *hebraConsumidora(void* hebras){
 	else{
 		printf("hola2 (hebra %d)\n",*hebra);
 		pthread_barrier_wait(&barrier);
-		printf("hola3\n");
 		matrixf *mf=getListMF(photothread,*hebra);
 		mf = bidirectionalConvolution(mf,filter);
 		mf = rectification(mf);
@@ -322,7 +323,7 @@ void *hebraConsumidora(void* hebras){
 		args.filter=filter;
 		args.datos=datos;
 		args.imagenSalida=imagenSalida;
-		photothread = setListMF(photothread,mf,datos[3]);
+		photothread = setListMF(photothread,mf,*hebra);
 	}
 }
 
@@ -401,7 +402,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	}
 	rewind(filefilter);
 	fclose(filefilter);
-	filter = convertFilter(datefilter, cont);
+	matrixf *filter = convertFilter(datefilter, cont);
     numeroImagenes = atoi(cflag);
 	numeroHebras = atoi(hflag);
 	largoBuffer = atoi(tflag);
@@ -412,8 +413,8 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	pthread_t *hebrasConsumidoras = (pthread_t *)malloc(numeroHebras*sizeof(pthread_t));
   	printf("\n|     Imagen     |     Nearly Black     |\n");
   	for(int image = 1; image <= numeroImagenes; image++){
-		buffer = createArrayListMF(largoBuffer); /*Lista de matrices*/
-		photothread = createArrayListMF(numeroHebras);
+		listmf *buffer = createArrayListMF(largoBuffer); /*Lista de matrices*/
+		listmf *photothread = createArrayListMF(numeroHebras);
 		matrixf *photomf;
 		int width, height, fil, col;
 		float date;
@@ -422,21 +423,17 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		png_bytep *row_pointers = NULL;
 		char cantidadImg[10];
 		char cantidadImgSalida[10];
-		printf("holi\n");
 	    sprintf(cantidadImg,"%d",image); /*Pasar de numero a string, cantidadImagen*/
 	    sprintf(cantidadImgSalida,"%d",image); /*Pasar de numero a string, cantidadImagen*/
 	    char *nombreFiltroConvolucion= mflag;
 	    char imagenArchivo[] = "imagen_";
-		char imagenSalida2[] = "out_";
+		char imagenSalida[] = "out_";
 	    char extension[] = ".png"; 
 	    char extension2[] = ".png";
-		printf("holi\n");
 	    strcat(imagenArchivo,cantidadImg);
 	    strcat(imagenArchivo,extension); /*imagen_1.png*/
-		printf("holi\n");
-		strcat(imagenSalida2,cantidadImgSalida);
-		strcat(imagenSalida2,extension2); /*out_1.png*/
-		imagenSalida = imagenSalida2;
+		strcat(imagenSalida,cantidadImgSalida);
+		strcat(imagenSalida,extension2); /*out_1.png*/
 
 		//printf("%s\n",imagenSalida);
 		
@@ -446,7 +443,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
 		int auxumbral = 0;
 	    matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
-		datos=(int*)malloc(4*sizeof(int));
+		int *datos=(int*)malloc(4*sizeof(int));
 		datos[0]=umbral;
 		datos[1]=auxumbral;
 		datos[2]=rowsXthread;
