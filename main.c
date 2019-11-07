@@ -32,6 +32,12 @@ matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
 	  mf = setDateMF(mf, y, x, prom);
     }
   }
+  for(int y = 0; y < height; y++) {
+    for(int x = 0; x < width; x++) {
+	  printf("|%f|",getDateMF(mf, y, x));
+    }
+	printf("\n");
+  }
   return mf;
 }
 
@@ -67,6 +73,12 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 		}
 		for (int cont = 0; cont < increase; cont++){
 			mf = amplifyMF(mf);
+		}
+		for(int y = 0; y < countFil(mf); y++) {
+			for(int x = 0; x < countColumn(mf); x++) {
+			  printf("|%f|",getDateMF(mf, y, x));
+			}
+			printf("\n");
 		}
 		for (int fil = 0; fil < countFil(filter) - countFil(filter); fil++){
 			for (int col = 0; col < countColumn(filter) - countColumn(filter); col++){
@@ -194,7 +206,7 @@ matrixf *classification(matrixf *mf, int umbral, char *namefile, int maxBlack, i
 		}
 	}
 	pthread_mutex_unlock(&mutex2);
-	if (actual == maxfil){
+	if (actual == maxfil-1){
 		float porcentBlack = (maxBlack * 100.0000)/(countFil(mf) * countColumn(mf));
 		if (porcentBlack >= umbral){
 			printf("|   %s   |         yes        |\n",namefile);
@@ -202,7 +214,6 @@ matrixf *classification(matrixf *mf, int umbral, char *namefile, int maxBlack, i
 		if (porcentBlack < umbral){
 			printf("|   %s   |         no         |\n",namefile);
 		}
-		strcat(namefile,"R.png");
 		escribirPNG(namefile, mf);
 	}
 	return mf;
@@ -264,7 +275,6 @@ void *hebraConsumidora(void* hebras){
 	printf("thread %d\n",*hebra);
 	if ((getListMF(photothread,*hebra)==NULL)||
 	((getListMF(photothread,*hebra)!=NULL)&&(countFil(getListMF(photothread,*hebra))<datos[2]))){
-		printf("que pasa\n");
 		pthread_mutex_lock(&mutex);
 		matrixf *newmf;
 		int maxrow = 0;
@@ -300,8 +310,8 @@ void *hebraConsumidora(void* hebras){
 					}
 				}
 			}
+			printf("HIHI %d de hebra %d\n",x,*hebra);
 		}
-		printf("que pasa2\n");
 		args.buffer=buffer;
 		args.photothread=photothread;
 		args.filter=filter;
@@ -324,6 +334,7 @@ void *hebraConsumidora(void* hebras){
 		args.datos=datos;
 		args.imagenSalida=imagenSalida;
 		photothread = setListMF(photothread,mf,*hebra);
+		printf("hola3 (hebra %d)\n",*hebra);
 	}
 }
 
@@ -454,16 +465,16 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		args.filter = filter;
 		args.imagenSalida = imagenSalida;
 		args.datos = datos;
+		args.buffer = buffer;/*Se guarda el buffer aca, porque aqui se crea*/
 		for (int row=0;row<countFil(photomf);row++){
 			for (int x=0;x<countColumn(photomf);x++){
 				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));
 			}
-			buffer = setListMF(buffer,aux,row%largoBuffer);
-			args.buffer = buffer;/*Se guarda el buffer aca, porque aqui se crea*/
+			args.buffer = setListMF(args.buffer,aux,row%largoBuffer);
 			if((fullListMF(buffer)==1)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					threads[thread]=thread;
-					printf("hebra %d\n",threads[thread]);
+					printf("hebra %d\n",row);
 					//pthread_create(hebras, NULL, la funcion que opera, estructura)
 					pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora,(void *)&threads[thread]);
 				}
@@ -472,6 +483,15 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 					pthread_join(hebrasConsumidoras[thread],NULL);
 				}
 			}
+		}
+		for (int thread=0;thread<numeroHebras;thread++){
+			threads[thread]=thread;
+			//pthread_create(hebras, NULL, la funcion que opera, estructura)
+			pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora,(void *)&threads[thread]);
+		}
+		for (int thread=0;thread<numeroHebras;thread++){
+			//pthread_join(hebras, NULL)
+			pthread_join(hebrasConsumidoras[thread],NULL);
 		}
   	}
 }
