@@ -138,8 +138,8 @@ matrixf *pooling(matrixf *mf){
 			float max = 0.0000;
 			for (int y = 0; y < 2; y++){
 				for (int x = 0; x < 2; x++){
-					if (max > getDateMF(mf, y, x)){
-						max = getDateMF(mf, y, x);
+					if (max > getDateMF(mf, y+fil, x+col)){
+						max = getDateMF(mf, y+fil, x+col);
 					}
 				}
 			}
@@ -150,6 +150,7 @@ matrixf *pooling(matrixf *mf){
 		fil = fil + 2;
 		fil2 = fil2 + 1;
 	}
+	free(mf);
 	return newmf;
 }
 
@@ -453,7 +454,6 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		printf("holahola %d, %d = %d\n",countFil(photomf),numeroHebras,rowsXthread);
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
 		int auxumbral = 0;
-	    matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
 		int *datos=(int*)malloc(4*sizeof(int));
 		datos[0]=umbral;
 		datos[1]=auxumbral;
@@ -467,11 +467,12 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		args.datos = datos;
 		args.buffer = buffer;/*Se guarda el buffer aca, porque aqui se crea*/
 		for (int row=0;row<countFil(photomf);row++){
+			matrixf *aux = createMF(1, countColumn(photomf));/*Matriz de una fila de la imagen con tantas columnas, vacia*/
 			for (int x=0;x<countColumn(photomf);x++){
-				aux=setDateMF(aux,row,x,getDateMF(photomf,row,x));
+				aux=setDateMF(aux,0,x,getDateMF(photomf,row,x));
 			}
 			args.buffer = setListMF(args.buffer,aux,row%largoBuffer);
-			if((fullListMF(buffer)==1)||(row==countColumn(photomf)-1)){
+			if((fullListMF(args.buffer)==1)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					threads[thread]=thread;
 					printf("hebra %d\n",row);
