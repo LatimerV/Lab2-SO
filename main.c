@@ -75,12 +75,12 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 			}
 			printf("\n");
 		}
-		for (int fil = 0; fil < countFil(filter) - countFil(filter); fil++){
-			for (int col = 0; col < countColumn(filter) - countColumn(filter); col++){
+		for (int fil = 0; fil < countFil(mf) - countFil(filter); fil++){
+			for (int col = 0; col < countColumn(mf) - countColumn(filter); col++){
 				float sum = 0.0000;
 				for (int y = 0; y < countFil(filter); y++){
 					for (int x = 0; x < countColumn(filter); x++){
-						float result = getDateMF(mf, y, x)*getDateMF(filter, y + fil, x + col);
+						float result = getDateMF(filter, y, x)*getDateMF(mf, y + fil, x + col);
 						sum = sum + result;
 					}
 				}
@@ -89,6 +89,12 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 		}
 		for (int cont2 = 0; cont2 < increase; cont2++){
 			mf = decreaseMF(mf);
+		}
+		for(int y = 0; y < countFil(mf); y++) {
+			for(int x = 0; x < countColumn(mf); x++) {
+			  printf("|%f|",getDateMF(mf, y, x));
+			}
+			printf("\n");
 		}
 		return mf;
 	}
@@ -133,7 +139,7 @@ matrixf *pooling(matrixf *mf){
 			float max = 0.0000;
 			for (int y = 0; y < 2; y++){
 				for (int x = 0; x < 2; x++){
-					if (max > getDateMF(mf, y+fil, x+col)){
+					if (max < getDateMF(mf, y+fil, x+col)){
 						max = getDateMF(mf, y+fil, x+col);
 					}
 				}
@@ -276,7 +282,7 @@ void *hebraConsumidora(void* hebras){
 		int maxrow = 0;
 		for (int x=0;x<lengthListMF(buffer);x++){
 			printf("HIHI %d de hebra %d\n",x,*hebra);
-			if (maxrow == datos[2]){
+			if (((maxrow == datos[2])&&(*hebra<datos[3]-1))||((maxrow == datos[2]+datos[4])&&(*hebra==datos[3]-1))){
 				break;
 			}
 			else{
@@ -338,7 +344,6 @@ void *hebraConsumidora(void* hebras){
 		args.filter=filter;
 		args.datos=datos;
 		args.imagenSalida=imagenSalida;
-		photothread = setListMF(photothread,mf,auxhebra);
 	}
 }
 
@@ -456,11 +461,12 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		printf("holahola %d, %d = %d\n",countFil(photomf),numeroHebras,rowsXthread);
 		int aditionalRows = countFil(photomf)%numeroHebras; /*Numero de filas adicionales a ultima hebra*/
 		int auxumbral = 0;
-		int *datos=(int*)malloc(4*sizeof(int));
+		int *datos=(int*)malloc(5*sizeof(int));
 		datos[0]=umbral;
 		datos[1]=auxumbral;
 		datos[2]=rowsXthread;
 		datos[3]=numeroHebras;
+		datos[4]=aditionalRows;
 		int *threads =(int*)malloc(numeroHebras*sizeof(int));
 		/*Se guardan los datos en la estructura*/
 		args.photothread = photothread;
