@@ -33,6 +33,7 @@ matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
     }
 	printf("\n");
   }
+  printf("\n");
   return mf;
 }
 
@@ -75,6 +76,7 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 			}
 			printf("\n");
 		}
+		printf ("\n");
 		for (int fil = 0; fil < countFil(mf) - countFil(filter); fil++){
 			for (int col = 0; col < countColumn(mf) - countColumn(filter); col++){
 				float sum = 0.0000;
@@ -96,6 +98,7 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 			}
 			printf("\n");
 		}
+		printf("\n");
 		return mf;
 	}
 	else{
@@ -114,6 +117,13 @@ matrixf *rectification(matrixf *mf){
 			}
 		}
 	}
+	for(int y = 0; y < countFil(mf); y++) {
+			for(int x = 0; x < countColumn(mf); x++) {
+			  printf("|%f|",getDateMF(mf, y, x));
+			}
+			printf("\n");
+		}
+		printf("\n");
 	return mf;
 }
 
@@ -135,6 +145,7 @@ matrixf *pooling(matrixf *mf){
 	int fil = 0, col = 0, fil2 = 0, col2 = 0;
 	while (fil < countFil(mf)){
 		col2 = 0;
+		col = 0;
 		while (col < countColumn(mf)){
 			float max = 0.0000;
 			for (int y = 0; y < 2; y++){
@@ -151,7 +162,12 @@ matrixf *pooling(matrixf *mf){
 		fil = fil + 2;
 		fil2 = fil2 + 1;
 	}
-	free(mf);
+	for(int y = 0; y < countFil(newmf); y++) {
+			for(int x = 0; x < countColumn(newmf); x++) {
+			  printf("|%f|",getDateMF(newmf, y, x));
+			}
+			printf("\n");
+		}
 	return newmf;
 }
 
@@ -170,11 +186,6 @@ void escribirPNG(char *filename, matrixf *mf) {
     PNG_COMPRESSION_TYPE_BASE,
     PNG_FILTER_TYPE_BASE
   );
-  png_text title_text;
-  title_text.compression = PNG_TEXT_COMPRESSION_NONE;
-  title_text.key = filename;
-  title_text.text = filename;
-  png_set_text(png, info, &title_text, 1);
   png_write_info(png, info);  
   png_bytep *row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * countFil(mf));
   for(int y = 0; y < countFil(mf); y++) {
@@ -182,11 +193,13 @@ void escribirPNG(char *filename, matrixf *mf) {
   }
   for(int y = 0; y < countFil(mf); y++) {
     for(int x = 0; x < countColumn(mf); x++) {
-	  (&(row_pointers[y][x * 4]))[0] = (int)getDateMF(mf, y, x);
-	  (&(row_pointers[y][x * 4]))[1] = (int)getDateMF(mf, y, x);
-	  (&(row_pointers[y][x * 4]))[2] = (int)getDateMF(mf, y, x);
-	  png_write_row(png, (&(row_pointers[y][x * 4])));
+	  (&(row_pointers[y][x * 3]))[0] = (int)getDateMF(mf, y, x);
+	  (&(row_pointers[y][x * 3]))[1] = (int)getDateMF(mf, y, x);
+	  (&(row_pointers[y][x * 3]))[2] = (int)getDateMF(mf, y, x);
+	  //printf("(%d)",(&(row_pointers[y][x * 3]))[0]);
+	 //png_write_row(png, row_pointers[y]);
     }
+	//printf("\n");
   } 
   png_write_image(png, row_pointers);
   png_write_end(png, NULL); 
@@ -273,15 +286,14 @@ void *hebraConsumidora(void* hebras){
 	matrixf *filter = args.filter;
 	int *datos = args.datos;
 	char *imagenSalida=args.imagenSalida;
-	printf("nombre %s\n",imagenSalida);
-	printf("thread %d\n",*hebra);
+	printf("(archivo png %s) thread %d\n",imagenSalida,*hebra);
 	if ((getListMF(photothread,*hebra)==NULL)||
 	((getListMF(photothread,*hebra)!=NULL)&&(countFil(getListMF(photothread,*hebra))<datos[2]))){
 		pthread_mutex_lock(&mutex);
 		matrixf *newmf;
 		int maxrow = 0;
 		for (int x=0;x<lengthListMF(buffer);x++){
-			printf("HIHI %d de hebra %d\n",x,*hebra);
+			//printf("HIHI %d de hebra %d\n",x,*hebra);
 			if (((maxrow == datos[2])&&(*hebra<datos[3]-1))||((maxrow == datos[2]+datos[4])&&(*hebra==datos[3]-1))){
 				break;
 			}
