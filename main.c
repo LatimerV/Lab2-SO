@@ -15,6 +15,7 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_barrier_t barrier;
+pthread_barrier_t barrier2;
 funciones args;
 
 matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
@@ -211,7 +212,7 @@ void escribirPNG(char *filename, matrixf *mf) {
   png_destroy_write_struct(&png, &info);
 }
 
-matrixf *classification(matrixf *mf, int umbral, char *namefile, int maxBlack, int actual, int maxfil){
+/*matrixf *classification(matrixf *mf, int umbral, char *namefile, int maxBlack, int actual, int maxfil){
 	pthread_mutex_lock(&mutex2);
 	for (int y = 0; y < countFil(mf); y++){
 		for (int x = 0; x < countColumn(mf); x++){
@@ -232,8 +233,47 @@ matrixf *classification(matrixf *mf, int umbral, char *namefile, int maxBlack, i
 		escribirPNG(namefile, mf);
 	}
 	return mf;
+}*/
+listmf *classification(listmf *photothread, int umbral, char *namefile, int maxBlack, int actual, int maxfil){
+	pthread_mutex_lock(&mutex2);
+	for (int y = 0; y < countFil(getListMF(photothread,actual)); y++){
+		for (int x = 0; x < countColumn(getListMF(photothread,actual)); x++){
+			if (getDateMF(getListMF(photothread,actual), y, x) == 0.0000){
+				maxBlack = maxBlack + 1;
+			}
+		}
+	}
+	pthread_mutex_unlock(&mutex2);
+	pthread_barrier_wait(&barrier2);
+	if (actual == maxfil-1){
+		int cantrows = 0;
+		for (int y = 0; y < lengthListMF(photothread); y++){
+			for (int x = 0; x < countFil(getListMF(photothread,y)); x++){
+				cantrows = cantrows + 1;
+			}
+		}
+		int row = 0;
+		matrixf *mf = createMF(cantrows,countColumn(getListMF(photothread,actual)));
+		for (int z = 0; z < lengthListMF(photothread); z++){
+			for (int y = 0; y < countFil(getListMF(photothread,z)); y++){
+				for (int x = 0; x < countColumn(getListMF(photothread,z)); x++){
+					mf = setDateMF(mf,row,x,getDateMF(getListMF(photothread,z), y, x));
+				}
+				row = row + 1;
+			}
+		}
+		float porcentBlack = (maxBlack * 100.0000)/(countFil(mf) * countColumn(mf));
+		if (porcentBlack >= umbral){
+			printf("|   %s   |         yes        |\n",namefile);
+		}
+		if (porcentBlack < umbral){
+			printf("|   %s   |         no         |\n",namefile);
+		}
+		escribirPNG(namefile, mf);
+	}
+	return photothread;
 }
-/**/
+
 matrixf *convertFilter(char **datefilter, int cont){
 	int colfilter = 1;
 	for (int x = 0; x < strlen(datefilter[0]); x++){
@@ -286,7 +326,7 @@ void *hebraConsumidora(void* hebras){
 	matrixf *filter = args.filter;
 	int *datos = args.datos;
 	char *imagenSalida=args.imagenSalida;
-	printf("(archivo png %s) thread %d\n",imagenSalida,*hebra);
+	printf("(archivo png %s) thread %d (hebras %d y hebra final %d)\n",imagenSalida,*hebra,datos[2],datos[2]+datos[4]);
 	if ((getListMF(photothread,*hebra)==NULL)||
 	((getListMF(photothread,*hebra)!=NULL)&&(countFil(getListMF(photothread,*hebra))<datos[2]))){
 		pthread_mutex_lock(&mutex);
@@ -349,8 +389,10 @@ void *hebraConsumidora(void* hebras){
 		mf = bidirectionalConvolution(mf,filter);
 		mf = rectification(mf);
 		mf = pooling(mf);
-		mf = classification(mf,datos[0],imagenSalida,datos[1],auxhebra,datos[3]);
 		photothread = setListMF(photothread,mf,auxhebra);
+		photothread = classification(photothread,datos[0],imagenSalida,datos[1],auxhebra,datos[3]);
+		/*mf = classification(mf,datos[0],imagenSalida,datos[1],auxhebra,datos[3]);
+		photothread = setListMF(photothread,mf,auxhebra);*/
 		args.buffer=buffer;
 		args.photothread=photothread;
 		args.filter=filter;
@@ -439,11 +481,12 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 	numeroHebras = atoi(hflag);
 	largoBuffer = atoi(tflag);
   	umbral = atoi(nflag);
-	pthread_mutex_init(&mutex,NULL);
-	pthread_mutex_init(&mutex2,NULL);
-	pthread_barrier_init(&barrier, NULL, numeroHebras);
   	printf("\n|     Imagen     |     Nearly Black     |\n");
   	for(int image = 1; image <= numeroImagenes; image++){
+		pthread_mutex_init(&mutex,NULL);
+		pthread_mutex_init(&mutex2,NULL);
+		pthread_barrier_init(&barrier, NULL, numeroHebras);
+		pthread_barrier_init(&barrier2, NULL, numeroHebras);
 		listmf *buffer = createArrayListMF(largoBuffer); /*Lista de matrices*/
 		listmf *photothread = createArrayListMF(numeroHebras);
 		matrixf *photomf;
