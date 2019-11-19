@@ -1,3 +1,3 @@
-pipeline: main.c -lpng -lm
-	gcc main.c -o pipeline -lpng -lm -I.
+pipeline: main.c -lpng -lm -lpthread
+	gcc -o pipeline main.c -l pthread -lpng -lm -I.
 

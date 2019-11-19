@@ -7,5 +7,6 @@ struct funciones{
 	struct matrixf *filter;
 	int *datos;
 	char *imagenSalida;
+	int mostrar;
 };
 typedef struct funciones funciones;
