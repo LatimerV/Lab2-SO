@@ -12,14 +12,20 @@
 #include "listmf.h"
 #include "funciones.h"
 
+//Primer mutex para la lectura y escritura del buffer.
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+//Segundo mutex para la lectura y escritura del contador para detectar nearly black.
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
+//Primer barrier para que todas las hebras hagan los procesos de las imagenes en paralelo.
 pthread_barrier_t barrier;
+//Segundo barrier para esperar a todas las hebras que calculan nearly black.
 pthread_barrier_t barrier2;
+//Dato global que contiene toda la informacion necesaria para trabajar una imagen y
+//almacena el buffer.
 funciones args;
 
 
-//Entradas: Puntero de tipo png_bytep, el largo y ancho de tipo int, de la matriz entrante.
+//Entradas: Puntero de tipo png_bytep, el largo y ancho de tipo int de la matriz entrante.
 //Funcionamiento: Realiza la conversion de una matriz a escala de grises.
 //Salidas: matrixf, el cual sirve como entrada para las demas funciones.
 
@@ -33,18 +39,16 @@ matrixf *grayScale(png_bytep *row_pointers, int height, int width) {
 	  mf = setDateMF(mf, y, x, prom);
     }
   }
-  for(int y = 0; y < height; y++) {
-    for(int x = 0; x < width; x++) {
-    }
-  }
   return mf;
 }
 
 
 
-//Entradas: Nombre de la imagen entrante de tipo char, matriz vacia para guarda la imagen, parametros importantes del formato png.
+//Entradas: Nombre de la imagen entrante de tipo char, matriz vacia para guarda la imagen, 
+//          parametros importantes del formato png.
 //Funcionamiento: realiza la lectura de la imagen entrante.
-//Salidas: matrixf, el cual sirve como entrada para las demas funciones.
+//Salidas: matrixf, correspondiente a los pixeles de la imagen y el cual sirve como entrada 
+//         para las demas funciones.
 
 matrixf* readPNG(char *nombre, matrixf *mf, int width, int height, png_byte color_type,
   png_byte bit_depth, png_bytep *row_pointers) {
@@ -69,9 +73,9 @@ matrixf* readPNG(char *nombre, matrixf *mf, int width, int height, png_byte colo
   return mf;
 }
 
-//Entradas: La matriz resultante de etapas anteriores, y el filtro necesario para hacer la convolution, matriz de 3x3.
+//Entradas: La matriz resultante de etapas anteriores, y el filtro necesario para hacer la convolution.
 //Funcionamiento: Aplica la convolution, el filtro a la matriz entrante.
-//Salidas: matrixf, el cual sirve como entrada para las demas funciones.
+//Salidas: matrixf,correspondiente a la matriz filtrada y el cual sirve como entrada para las demas funciones.
 
 matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 	if ((countFil(filter) == countColumn(filter))&&(countFil(filter)%2 == 1)){
@@ -82,10 +86,6 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 		}
 		for (int cont = 0; cont < increase; cont++){
 			mf = amplifyMF(mf);
-		}
-		for(int y = 0; y < countFil(mf); y++) {
-			for(int x = 0; x < countColumn(mf); x++) {
-			}
 		}
 		for (int fil = 0; fil < countFil(mf) - countFil(filter); fil++){
 			for (int col = 0; col < countColumn(mf) - countColumn(filter); col++){
@@ -102,10 +102,6 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 		for (int cont2 = 0; cont2 < increase; cont2++){
 			mf = decreaseMF(mf);
 		}
-		for(int y = 0; y < countFil(mf); y++) {
-			for(int x = 0; x < countColumn(mf); x++) {
-			}
-		}
 		return mf;
 	}
 	else{
@@ -114,7 +110,8 @@ matrixf *bidirectionalConvolution(matrixf *mf, matrixf *filter){
 }
 
 //Entradas: La matriz resultante de etapas anteriores.
-//Funcionamiento: Aplica la rectificacion, recorre cada pixel de la matriz, verificando si es positivo (se mantiene pixel) o negativo (se cambia por 0).
+//Funcionamiento: Aplica la rectificacion, recorre cada pixel de la matriz, verificando si es positivo 
+//                (se mantiene pixel 0 es 255 si es mayor que este) o negativo (se cambia por 0).
 //Salidas: matrixf, el cual sirve como entrada para las demas funciones.
 
 matrixf *rectification(matrixf *mf){
@@ -128,20 +125,15 @@ matrixf *rectification(matrixf *mf){
 			}
 		}
 	}
-	for(int y = 0; y < countFil(mf); y++) {
-			for(int x = 0; x < countColumn(mf); x++) {
-			  
-			}
-			
-		}
-		
 	return mf;
 }
 
 
 //Entradas: La matriz resultante de etapas anteriores.
-//Funcionamiento: Realiza la etapa de pooling, en el cual obtiene de la matriz entrante el largo y ancho, para poder reducir la matriz resultante.
-//Salidas: matrixf, el cual sirve como entrada para las demas funciones.
+//Funcionamiento: Realiza la etapa de pooling, en el cual obtiene de la matriz entrante el 
+//                largo y ancho, para poder reducir la matriz resultante.
+//Salidas: matrixf, correspondiente a la matrix resultando al aplicar el pooling y el cual 
+//         sirve como entrada para las demas funciones.
 
 matrixf *pooling(matrixf *mf){
 	int heigth = 0, width = 0;
@@ -178,16 +170,10 @@ matrixf *pooling(matrixf *mf){
 		fil = fil + 2;
 		fil2 = fil2 + 1;
 	}
-	for(int y = 0; y < countFil(newmf); y++) {
-			for(int x = 0; x < countColumn(newmf); x++) {
-			  
-			}
-			
-		}
 	return newmf;
 }
 
-//Entradas: La matriz resultante de etapas anteriores, como tambien el nombre de la imagen entrante (imagen_1.png).
+//Entradas: La matriz resultante de etapas anteriores, como tambien el nombre de la imagen saliente (out_1.png).
 //Funcionamiento: Realiza el proceso de escribir la matriz resultante, en una imagen de formato .png.
 //Salidas: Void.
 
@@ -228,7 +214,8 @@ void escribirPNG(char *filename, matrixf *mf) {
   png_destroy_write_struct(&png, &info);
 }
 
-//Entradas: Lista de matrices, el umbral como entero, el cual indica el punto de clasificacion, el nombre de la imagen como char*.
+//Entradas: Lista de matrices, el umbral como entero, el cual indica el punto de clasificacion, el 
+//          nombre de la imagen como char*.
 //Funcionamiento: Clasifica las imagenes si cumplen con cierto criterio, si es nearly black o no.
 //Salidas: listmf, el cual contiene las diferentes imagenes que fueron clasificadas.
 
@@ -328,7 +315,12 @@ matrixf *convertFilter(char **datefilter, int cont){
 
 
 //Entradas: Se tienen las hebras entrantes, las cuales la cantidad de las mismas son indicas por el usuario.
-//Funcionamiento: Las hebras realizar las diferentes etapas del pipeline, como la rectificacion, pooling, etc.
+//Funcionamiento: Trabaja con la hebra entrante. Si esta no posee la cantidad de filas correspondientes
+//                para que pueda trabajar, entonces obtiene la informacion de buffer para almacenarla
+//                impidiendo que otras hebras entren al buffer hasta que esta vacie lo necesario, o esperar
+//                a que la hebra anterior desocupe el buffer para que lo pueda vaciar. En caso de que la hebra
+//                tenga la cantidad de  filas de la imagen que le corresponden, entonces aplicara los procesos
+//                de convolucion, rectificacion, pooling y clasificacion.
 //Salidas: Void.
 
 void *hebraConsumidora(void* hebras){
@@ -406,8 +398,7 @@ void *hebraConsumidora(void* hebras){
 }
 
 // Funcion main: Funcion que toma por parametros los datos entrantes y pasa a la etapa de lectura,
-//la matriz del filtro para convulocion y el nombre de las imagenes.
-// 
+//               la matriz del filtro para convulocion y el nombre de las imagenes.
 // Entrada: los parametros ingresados por el usuario.
 // Salida: Entero que representa fin de su ejecucion.
 
@@ -488,7 +479,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
   	if(mostrar==1){
   		printf("\n|     Imagen     |     Nearly Black     |\n");
   	}else{
-  		printf("FIn del programa.\n");
+  		printf("Fin del programa.\n");
   	}
 
   	
@@ -550,8 +541,7 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 			if((fullListMF(args.buffer)==1)||(row==countColumn(photomf)-1)){
 				for (int thread=0;thread<numeroHebras;thread++){
 					threads[thread]=thread;
-					
-					
+										
 					pthread_create(&hebrasConsumidoras[thread],NULL,&hebraConsumidora,(void *)&threads[thread]);
 				}
 				for (int thread=0;thread<numeroHebras;thread++){
@@ -575,4 +565,3 @@ int main(int argc, char *argv[]){ /*Main principal de la funcion*/
 		}
   	}
 }
-
