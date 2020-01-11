@@ -11,7 +11,11 @@ make
 
 Para hacer uso del programa hacer el comando:
 
-./pipeline -c <cantidad imagenes> -f <nombre archivo de filtro.txt> -n <umbral> -b 
+./pipeline -c <cantidad imagenes> -m <nombre archivo de filtro.txt> -n <umbral> -h <cantidad hebras> -t <largo buffer> -b 
+
+Ejemplo:
+./pipeline -c 3 -m filtroPasoBajo.txt -n 80 -h 1 -t 10 -b 
+Funciona con las 3 imagenes.
 
 El parametro <-b> es opcional.
 Las imagenes tiene que tener como dimensión máxima de 120x120px
